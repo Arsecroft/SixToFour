@@ -11,14 +11,15 @@ iface=$1
 # http://en.wikipedia.org/wiki/Multicast_address#IPv6
 ping6 -I $1 ff02::1 > /dev/null &
 
-neighbors=`ip neigh | grep $1 | cut -d " " -f 5,1 | awk '{print $2" "$1}' | sort`
 
 while :
 do
+    neighbors=`ip addr | egrep "inet.*brd.*$iface" | cut -d" " -f6 | xargs -I @ nmap -vv -n -PR -sP @ > /dev/null && ip neigh | grep $1 |grep -v FAILED | cut -d " " -f 5,1 | awk '{print $2" "$1}' | sort`
     for INDEX in $(echo "$neighbors" | cut -f1 -d" "| uniq)
     do 
         echo "$neighbors" | grep "^$INDEX" | tr '\n' ' ' | sed "s/ $INDEX//g"; 
         echo
     done
+    echo -e "=== ^ $iface ^ ==="
     sleep 1
 done
