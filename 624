@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [ "$1" == "" ]
+then
+    echo "usage: $0 <iface>"
+    exit 1
+fi
+
+iface=$1
+
+# http://en.wikipedia.org/wiki/Multicast_address#IPv6
+ping6 -I $1 ff02::1 > /dev/null &
+
+neighbors=`ip neigh | grep $1 | cut -d " " -f 5,1 | awk '{print $2" "$1}' | sort`
+
+while :
+do
+    for INDEX in $(echo "$neighbors" | cut -f1 -d" "| uniq)
+    do 
+        echo "$neighbors" | grep "^$INDEX" | tr '\n' ' ' | sed "s/ $INDEX//g"; 
+        echo
+    done
+    sleep 1
+done
